@@ -1,0 +1,50 @@
+# Please do not use this ignore file to define platform specific files.
+#
+# For these purposes create a global .gitignore file, which is a list of rules
+# for ignoring files in every Git repository on your computer.
+#
+# https://help.github.com/articles/ignoring-files/#create-a-global-gitignore
+
+*.o
+*.lo
+*.loT
+*.la
+.deps
+.libs
+acinclude.m4
+aclocal.m4
+autom4te.cache
+/build
+config.guess
+config.h
+config.h.in
+config.h.in~
+config.log
+config.nice
+config.nice.bat
+config.status
+config.sub
+configure
+configure.bat
+configure.in
+configure.ac
+configure.js
+/coverage
+coverage.info
+install-sh
+lcov.info
+libtool
+ltmain.sh
+Makefile
+Makefile.fragments
+Makefile.global
+Makefile.objects
+missing
+mkinstalldirs
+/modules
+/release
+run-tests.php
+php_test_results_*
+/x64
+
+/aspekt/lexer.c

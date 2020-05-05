@@ -1,0 +1,6 @@
+*.re    linguist-language=C
+*.pdf   binary
+*.c   	linguist-language=C
+*.h   	linguist-language=C
+*.w32 	linguist-language=JavaScript
+*.inc 	linguist-language=PHP

@@ -1,0 +1,143 @@
+# This file is part of the Aspekt.
+#
+# (c) airSlate Inc. <support@airslate.com>
+#
+# For the full copyright and license information, please view
+# the LICENSE file that was distributed with this source code.
+
+name: build
+
+on:
+  push:
+    branches-ignore:
+      - 'wip-*'
+    paths-ignore:
+      - '**.md'
+      - '**.txt'
+  pull_request:
+    branches:
+      - master
+  schedule:
+    - cron: '0 11 * * *'
+
+jobs:
+  linux:
+    name: "${{ matrix.name }}: PHP ${{ matrix.php }}"
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+
+      matrix:
+        php:
+          - '7.0'
+          - '7.1'
+          - '7.2'
+          - '7.3'
+          - '7.4'
+
+        name:
+          - Ubuntu
+          - macOS
+
+        include:
+          - name: Ubuntu
+            os: ubuntu-18.04
+            ccov: ON
+
+          - name: macOS
+            os: macos-latest
+            ccov: OFF
+
+    steps:
+      - name: Setup Prerequisites
+        if: runner.os == 'Linux'
+        run: |
+          # We don't need this at all, and our
+          # builds often fails because Microsoft
+          # servers are unstable or even offline.
+          sudo rm -f /etc/apt/sources.list.d/dotnetdev.list
+          sudo rm -f /etc/apt/sources.list.d/azure*.list
+
+          sudo apt-get update --quiet --yes 1>/dev/null
+          sudo apt-get install --no-install-recommends --quiet --yes lcov gdb re2c
+
+      - name: Setup Prerequisites (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          brew install lcov re2c
+          sudo xcode-select -switch /Applications/Xcode.app
+
+      - name: Setup Build System (Generic)
+        run: |
+          ulimit -c unlimited -S || true
+
+          echo "::set-env name=PATH::$PATH:$HOME/bin:$(brew --prefix lcov)/bin"
+          echo "::set-env name=MAKEFLAGS::-j$(getconf _NPROCESSORS_ONLN)"
+          echo "::set-env name=CI::true"
+
+      - name: Setup Build System (Linux)
+        if: runner.os == 'Linux'
+        run: echo '/tmp/core.%e.%p.%t' | sudo tee /proc/sys/kernel/core_pattern
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          tools: phpize, php-config
+          extensions: session
+          coverage: none
+          ini-values: >-
+            error_reporting=-1,
+            memory_limit=1G,
+            date.timezone=UTC
+
+      - name: Checkout Code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 5
+
+      - name: Build Extension
+        run: |
+          phpize
+
+          if [ "${{ matrix.ccov}}" = "ON" ]; then
+            ./configure \
+              --enable-aspekt \
+              --enable-aspekt-debug \
+              --enable-coverage
+          else
+            ./configure \
+              --enable-aspekt \
+              --enable-aspekt-debug
+          fi
+
+          make -j$(getconf _NPROCESSORS_ONLN)
+
+      - name: Preparing to Collect Coverage Data
+        if: matrix.ccov == 'ON'
+        run: make coverage-initial
+
+      - name: Run Tests
+        run: make test NO_INTERACTION=1 REPORT_EXIT_STATUS=1
+
+      - name: Print Failures
+        if: failure() && runner.os == 'Linux'
+        run: .ci/after-failure.sh
+
+      - name: Capture Coverage Data
+        if: success() && matrix.ccov == 'ON'
+        run: make coverage-capture
+
+      # - name: Upload Code Coverage Report
+      #   if: matrix.ccov == 'ON'
+      #   uses: codecov/codecov-action@v1
+      #   with:
+      #     token: ${{secrets.CODECOV_TOKEN}}
+      #     file: ./lcov.info
+      #     flags: unittests
+      #     fail_ci_if_error: false
+
+      - name: Success Reporting
+        if: success()
+        run: git log --format=fuller -5

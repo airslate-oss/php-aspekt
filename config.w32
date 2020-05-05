@@ -1,0 +1,33 @@
+// config.m4 for extension Aspekt
+//
+// This file is part of the Aspekt.
+//
+// (c) airSlate Inc. <support@airslate.com>
+//
+// For the full copyright and license information, please view
+// the LICENSE file that was distributed with this source code.
+
+ARG_ENABLE("aspekt", " whether to enable Aspekt support", "yes");
+ARG_ENABLE('aspekt-debug', "whether to enable debugging support in Aspekt", "no");
+
+if (PHP_ASPEKT == "yes") {
+    var aspekt_sources = "aspekt\\execute.c aspekt\\interceptor.c aspekt\\joinpoint.c aspekt\\kind.c aspekt\\lexer.c";
+    var aspekt_headers = "aspekt\\execute.h aspekt\\interceptor.h aspekt\\joinpoint.h aspekt\\kind.h aspekt\\lexer.h php_aspekt.h";
+
+    var ext_flags = "/DZEND_ENABLE_STATIC_TSRMLS_CACHE=1 " +
+        "-I" + configure_module_dirname + " " +
+        "-I" + configure_module_dirname + "\\aspekt ";
+
+    if (PHP_ASPEKT_DEBUG != "no") {
+        AC_DEFINE('USE_ASPEKT_DEBUG', 1, "Include debugging support in Aspekt");
+    }
+
+    EXTENSION("aspekt", "php_aspekt.c", PHP_ASPEKT_SHARED, ext_flags);
+
+    ADD_SOURCES(configure_module_dirname, aspekt_sources, "aspekt");
+    PHP_INSTALL_HEADERS("ext\\aspekt", aspekt_headers);
+
+    AC_DEFINE('HAVE_ASPEKT', 1, "Whether you have Aspekt");
+
+    ADD_MAKEFILE_FRAGMENT("mk\\aspekt.w32.mk")
+}
