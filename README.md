@@ -1,10 +1,11 @@
 # Aspekt
 
+[![Build Status][actions badge]][actions link]
+
 Aspekt is a modern aspect-oriented PHP extension with rich features for the new
 level of software development. It enables you to use [Aspect Oriented
-Programming](https://en.wikipedia.org/wiki/Aspect-oriented_programming) in PHP,
-without the need to compile or proceed to any other intermediate step before
-publishing your code.
+Programming][aop] in PHP, without the need to compile or proceed to any other
+intermediate step before publishing your code.
 
 Supported PHP versions: **7.0**, **7.1**, **7.2** and **7.4**
 
@@ -25,9 +26,11 @@ Copyright © 2018-2020, airSlate Inc. All rights reserved.<br>
 This project is fully reworked and separately developed version of [Salleyron
 Julien's AOP PHP extension](https://github.com/AOP-PHP/AOP).<br>
 
-The copyright of previous versions of this work belongs to Salleyron Julien. For
-more see [LICENSE-PHP](./LICENSE-PHP) license file.
+The copyright of previous versions of this work belongs to Salleyron Julien.
+For more see [LICENSE-PHP](./LICENSE-PHP) license file.
 
 `SPDX-License-Identifier: MIT`
 
-[1]: https://en.wikipedia.org/wiki/Aspect-oriented_programming
+[actions link]: https://github.com/airslate-oss/php-aspekt/actions
+[actions badge]: https://github.com/airslate-oss/php-aspekt/workflows/build/badge.svg
+[aop]: https://en.wikipedia.org/wiki/Aspect-oriented_programming
