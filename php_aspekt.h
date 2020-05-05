@@ -47,7 +47,7 @@ extern zend_module_entry aspekt_module_entry;
 
 /* {{{ Extension name */
 #define ASPEKT_NAME "aspekt"
-#define ASPEKT_VERSION "1.2.1"
+#define ASPEKT_VERSION "1.2.2"
 #define ASPEKT_AUTHOR "Serghei Iakovlev <egrep@protonmail.ch>"
 #define ASPEKT_DESCRIPTION \
 	"A modern aspect-oriented PHP extension with rich features for the new level of software development."
@@ -165,38 +165,38 @@ void free_pointcut_cache(zval *elem);
 
 /* {{{ ASPEKT_REGISTER_CLASS
  class/interface registering */
-#define ASPEKT_REGISTER_CLASS(ns, cl, lns, n, m, f)                    \
-	{                                                                  \
-		zend_class_entry ce;                                           \
-		memset(&ce, 0, sizeof(zend_class_entry));                      \
-		INIT_NS_CLASS_ENTRY(ce, #ns, #cl, m);                          \
-		lns## _ ##n## _ce_ptr = zend_register_internal_class(&ce);     \
-		if (UNEXPECTED(!lns## _ ##n## _ce_ptr)) {                      \
+#define ASPEKT_REGISTER_CLASS(ns, cl, lns, n, m, f) \
+	{ \
+		zend_class_entry ce; \
+		memset(&ce, 0, sizeof(zend_class_entry)); \
+		INIT_NS_CLASS_ENTRY(ce, #ns, #cl, m); \
+		lns## _ ##n## _ce_ptr = zend_register_internal_class(&ce); \
+		if (UNEXPECTED(!lns## _ ##n## _ce_ptr)) { \
 			zend_error(E_ERROR, "Class '%s' registration has failed.", \
-				ZEND_NS_NAME(#ns, #cl));                               \
-			return FAILURE;                                            \
-		}                                                              \
-		lns## _ ##n## _ce_ptr->ce_flags |= f;                          \
+				ZEND_NS_NAME(#ns, #cl)); \
+			return FAILURE; \
+		} \
+		lns## _ ##n## _ce_ptr->ce_flags |= f; \
 	}
 /* }}} */
 
 /* {{{ ASPEKT_INIT */
-#define ASPEKT_INIT(name)                                             \
+#define ASPEKT_INIT(name) \
 	if (aspekt_ ##name## _init(INIT_FUNC_ARGS_PASSTHRU) == FAILURE) { \
-		return FAILURE;                                               \
+		return FAILURE;\
 	}
 /* }}} */
 
 /* {{{ ASPEKT_INIT_THIS */
-#define ASPEKT_INIT_THIS()                     \
-	zval this_zv;                              \
-	zval *this_ptr = getThis();                \
-	if (EXPECTED(this_ptr)) {                  \
+#define ASPEKT_INIT_THIS() \
+	zval this_zv; \
+	zval *this_ptr = getThis(); \
+	if (EXPECTED(this_ptr)) { \
 		ZVAL_OBJ(&this_zv, Z_OBJ_P(this_ptr)); \
-		this_ptr = &this_zv;                   \
-	} else {                                   \
-		ZVAL_NULL(&this_zv);                   \
-		this_ptr = &this_zv;                   \
+		this_ptr = &this_zv; \
+	} else { \
+		ZVAL_NULL(&this_zv);\
+		this_ptr = &this_zv; \
 	}
 /* }}} */
 
