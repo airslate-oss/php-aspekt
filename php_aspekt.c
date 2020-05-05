@@ -59,7 +59,7 @@ static void free_pointcut(zval *elem) /* {{{ */
 	pointcut *pc = (pointcut *)Z_PTR_P(elem);
 
 	if (pc == NULL) {
-		return; // LCOV_EXCL_LINE
+		return; /* LCOV_EXCL_LINE */
 	}
 
 	if (&(pc->fci.function_name)) {
@@ -102,26 +102,40 @@ PHP_MINIT_FUNCTION(aspekt)
 {
 	REGISTER_INI_ENTRIES();
 
-	// 1. overload zend_execute_ex and zend_execute_internal
+	/* 1. Overload zend_execute_ex and zend_execute_internal */
 	original_zend_execute_ex = zend_execute_ex;
 	zend_execute_ex = aspekt_execute_ex;
 
 	original_zend_execute_internal = zend_execute_internal;
 	zend_execute_internal = aspekt_execute_internal;
 
-	// 2.overload zend_std_read_property and zend_std_write_property
-	//original_zend_std_read_property = std_object_handlers.read_property;
-	//std_object_handlers.read_property = aspekt_read_property;
+	/* 2. Overload zend_std_read_property and zend_std_write_property */
+# if PHP_VERSION_ID >= 70300
+	//zend_object_handlers *handlers = (zend_object_handlers *)zend_get_std_object_handlers();
 
-	//original_zend_std_write_property = std_object_handlers.write_property;
-	//std_object_handlers.write_property = aspekt_write_property;
+	//original_zend_std_read_property = handlers->read_property;
+	//handlers->read_property = aspekt_read_property;
 
-	/*
-	 * To avoid zendvm inc/dec property value directly
-	 * When get_property_ptr_ptr return NULL, zendvm will use write_property to inc/dec property value
-	 */
-	//original_zend_std_get_property_ptr_ptr = std_object_handlers.get_property_ptr_ptr;
-	//std_object_handlers.get_property_ptr_ptr = aspekt_get_property_ptr_ptr;
+	//original_zend_std_write_property = handlers->write_property;
+	//handlers->write_property = aspekt_write_property;
+# else
+	original_zend_std_read_property = std_object_handlers.read_property;
+	std_object_handlers.read_property = aspekt_read_property;
+
+	original_zend_std_write_property = std_object_handlers.write_property;
+	std_object_handlers.write_property = aspekt_write_property;
+# endif
+
+	/* 3. To avoid zendvm inc/dec property value directly
+	 * When get_property_ptr_ptr return NULL, zendvm will use write_property
+	 * to inc/dec property value */
+# if PHP_VERSION_ID >= 70300
+	//original_zend_std_get_property_ptr_ptr = handlers->get_property_ptr_ptr;
+	//handlers->get_property_ptr_ptr = aspekt_get_property_ptr_ptr;
+# else
+	original_zend_std_get_property_ptr_ptr = std_object_handlers.get_property_ptr_ptr;
+	std_object_handlers.get_property_ptr_ptr = aspekt_get_property_ptr_ptr;
+# endif
 
 	ASPEKT_INIT(JoinPoint);
 	ASPEKT_INIT(Interceptor);
@@ -144,7 +158,6 @@ PHP_RINIT_FUNCTION(aspekt)
 #if defined(COMPILE_DL_ASPEKT) && defined(ZTS)
 	ZEND_TSRMLS_CACHE_UPDATE();
 #endif
-
 	ASPEKT_G(overloaded) = 0;
 	ASPEKT_G(pointcut_version) = 0;
 
